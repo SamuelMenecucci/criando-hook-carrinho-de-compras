@@ -53,12 +53,8 @@ const Home = (): JSX.Element => {
             <img src={element.image} alt={element.title} />
             <strong>{element.title}</strong>
             <span>
-              {/* formatando o valor para real */}
-              {/* TODO utilizar o código da pasta util para a formatação de valores  */}
-              {new Intl.NumberFormat("pt-br", {
-                style: "currency",
-                currency: "BRL",
-              }).format(element.price)}
+              {/* formatando o valor para real utilizando o util/format */}
+              {formatPrice(element.price)}
             </span>
             <button
               type="button"
@@ -67,7 +63,7 @@ const Home = (): JSX.Element => {
             >
               <div data-testid="cart-product-quantity">
                 <MdAddShoppingCart size={16} color="#FFF" />
-                {/* {cartItemsAmount[product.id] || 0} */} 2
+                {/* {cartItemsAmount[product.id] || 0} */} 0
               </div>
 
               <span>ADICIONAR AO CARRINHO</span>

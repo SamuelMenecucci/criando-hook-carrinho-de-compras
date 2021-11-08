@@ -30,6 +30,7 @@ const Home = (): JSX.Element => {
 
   const cartItemsAmount = cart.reduce(
     (sumAmount, product) => {
+      //adicionando a quantidade de itens no carrinho conforme o id do produto
       sumAmount[product.id] = product.amount;
 
       return sumAmount;

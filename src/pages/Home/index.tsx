@@ -5,8 +5,6 @@ import { ProductList } from "./styles";
 import { formatPrice } from "../../util/format";
 import { useCart } from "../../hooks/useCart";
 import { api } from "../../services/api";
-import { useProducts } from "../../hooks/useProducts";
-import { sign } from "crypto";
 
 interface Product {
   id: number;
@@ -24,7 +22,7 @@ interface CartItemsAmount {
 }
 
 const Home = (): JSX.Element => {
-  const { products } = useProducts();
+  const [products, setProducts] = useState<ProductFormatted[]>([]);
 
   const { addProduct, cart } = useCart();
 
@@ -45,6 +43,16 @@ const Home = (): JSX.Element => {
     } as CartItemsAmount
   );
 
+  useEffect(() => {
+    async function loadProducts() {
+      api
+        .get("http://localhost:3333/products")
+        .then((response) => setProducts(response.data));
+    }
+
+    loadProducts();
+  }, []);
+
   function handleAddProduct(id: number) {
     addProduct(id);
   }
@@ -52,7 +60,7 @@ const Home = (): JSX.Element => {
   return (
     <ProductList>
       {/* exibindo de forma dinâmica os produtos existentes utilizando o estado com as informações  */}
-      {products.map((element: any) => {
+      {products.map((element) => {
         return (
           <li key={element.id}>
             <img src={element.image} alt={element.title} />

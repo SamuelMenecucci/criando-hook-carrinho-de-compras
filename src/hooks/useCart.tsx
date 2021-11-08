@@ -8,6 +8,7 @@ import {
 import { toast } from "react-toastify";
 import { api } from "../services/api";
 import { Product, Stock } from "../types";
+import { useProducts } from "./useProducts";
 
 interface CartProviderProps {
   children: ReactNode;
@@ -28,50 +29,81 @@ interface CartContextData {
 const CartContext = createContext<CartContextData>({} as CartContextData);
 
 export function CartProvider({ children }: CartProviderProps): JSX.Element {
-  const [products, setProducts] = useState<Product[]>([]);
-
-  useEffect(() => {
-    async function loadProducts() {
-      //fazendo o get na rota de produtos e setando no estado todos os produtos
-      api
-        .get("http://localhost:3333/products")
-        .then((response) => setProducts(response.data));
-    }
-
-    loadProducts();
-  }, []);
+  const { products } = useProducts();
 
   const [cart, setCart] = useState<Product[]>(() => {
-    // const storagedCart = Buscar dados do localStorage
+    const storagedCart = localStorage.getItem("@Rocketshoes: cart");
 
-    // if (storagedCart) {
-    //   return JSON.parse(storagedCart);
-    // }
+    if (storagedCart) {
+      return JSON.parse(storagedCart);
+    }
 
     return [];
   });
 
   const addProduct = async (productId: number) => {
     try {
-      let newProductCart: any = products.find((element) => {
+      const updatedCart = [...cart];
+
+      let productExists = updatedCart.find((element) => {
         return element.id === productId;
       });
 
-      cart.length == 0
-        ? setCart([newProductCart])
-        : cart.includes(newProductCart)
-        ? console.log("already exists")
-        : setCart([...cart, newProductCart]);
-    } catch (err) {
-      //TODO exibir error com as orientações do desafio
+      const stockAmount = await api
+        .get(`/stock/${productId}`)
+        .then((response) => response.data.amount);
+
+      const currentAmount = productExists ? productExists.amount : 0;
+
+      const amount = currentAmount + 1;
+
+      if (amount > stockAmount) {
+        toast.error("Quantidade solicitada fora de estoque");
+        return;
+      }
+
+      if (productExists) {
+        productExists.amount = amount;
+      } else {
+        const product = await api.get(`/products/${productId}`);
+
+        const newProduct = {
+          ...product.data,
+          amount: 1,
+        };
+
+        updatedCart.push(newProduct);
+      }
+
+      setCart(updatedCart);
+      localStorage.setItem("@RocketShoes: cart", JSON.stringify(updatedCart));
+
+      // if (amount > stock) {
+      //   toast.error("Quantidade solicitada fora de estoque");
+      //   return;
+      // }
+
+      // if (newProduct) {
+      //   newProduct.amount = amount;
+      // }
+
+      // !newProduct ? setCart([, newProduct]) : console.log(updatedCart);
+
+      // cart.forEach((element) =>
+      //     element.id === newProduct.id
+      //       ? (newProduct = { ...cart, amount: 0 })
+      //       : element
+      //   );
+    } catch {
+      toast.error("Erro na adição do produto");
     }
   };
 
   const removeProduct = (productId: number) => {
     try {
-      // TODO
+      setCart(cart.filter((element) => element.id !== productId));
     } catch {
-      // TODO
+      // TODO exibir error com as orientações do desafio
     }
   };
 
@@ -80,7 +112,6 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     amount,
   }: UpdateProductAmount) => {
     try {
-      // TODO
     } catch {
       // TODO
     }

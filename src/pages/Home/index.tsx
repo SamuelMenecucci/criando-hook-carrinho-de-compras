@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { MdAddShoppingCart } from "react-icons/md";
 
 import { ProductList } from "./styles";
-import { api } from "../../services/api";
 import { formatPrice } from "../../util/format";
 import { useCart } from "../../hooks/useCart";
+import { api } from "../../services/api";
+import { useProducts } from "../../hooks/useProducts";
+import { sign } from "crypto";
 
 interface Product {
   id: number;
@@ -22,23 +24,25 @@ interface CartItemsAmount {
 }
 
 const Home = (): JSX.Element => {
-  const [products, setProducts] = useState<ProductFormatted[]>([]);
+  const { products } = useProducts();
+
   const { addProduct, cart } = useCart();
 
-  // const cartItemsAmount = cart.reduce((sumAmount, product) => {
-  //   // TODO
-  // }, {} as CartItemsAmount)
+  const cartItemsAmount = cart.reduce(
+    (sumAmount, product) => {
+      sumAmount[product.id] = product.amount;
 
-  useEffect(() => {
-    async function loadProducts() {
-      //fazendo o get na rota de produtos e setando no estado todos os produtos
-      api
-        .get("http://localhost:3333/products")
-        .then((response) => setProducts(response.data));
-    }
-
-    loadProducts();
-  }, []);
+      return sumAmount;
+    },
+    {
+      1: 0,
+      2: 0,
+      3: 0,
+      4: 0,
+      5: 0,
+      6: 0,
+    } as CartItemsAmount
+  );
 
   function handleAddProduct(id: number) {
     addProduct(id);
@@ -47,7 +51,7 @@ const Home = (): JSX.Element => {
   return (
     <ProductList>
       {/* exibindo de forma dinâmica os produtos existentes utilizando o estado com as informações  */}
-      {products.map((element) => {
+      {products.map((element: any) => {
         return (
           <li key={element.id}>
             <img src={element.image} alt={element.title} />
@@ -63,7 +67,7 @@ const Home = (): JSX.Element => {
             >
               <div data-testid="cart-product-quantity">
                 <MdAddShoppingCart size={16} color="#FFF" />
-                {/* {cartItemsAmount[product.id] || 0} */} 0
+                {cartItemsAmount[element.id] || 0}
               </div>
 
               <span>ADICIONAR AO CARRINHO</span>

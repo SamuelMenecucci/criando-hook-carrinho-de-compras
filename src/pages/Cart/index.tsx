@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   MdDelete,
   MdAddCircleOutline,
@@ -7,8 +6,6 @@ import {
 import { useCart } from "../../hooks/useCart";
 import { formatPrice } from "../../util/format";
 
-// import { useCart } from '../../hooks/useCart';
-// import { formatPrice } from '../../util/format';
 import { Container, ProductTable, Total } from "./styles";
 
 interface Product {
@@ -22,12 +19,17 @@ interface Product {
 const Cart = (): JSX.Element => {
   const { cart, removeProduct, updateProductAmount } = useCart();
 
+  //fazendo a inserção de duas propriedades utilizando os valores do cart
   const cartFormatted = cart.map((product) => ({
     ...product,
+    //formatando o valor do produto com o util/format.ts
     priceFormatted: formatPrice(product.price),
+
+    //multiplicando a quantidade de produtos pelo valor de cada um para saber o total de cada produto
     subtotal: formatPrice(product.price * product.amount),
   }));
 
+  //adicionando em uma variável o valor total com reduce
   const total = formatPrice(
     cart.reduce((sumTotal, product) => {
       return sumTotal + product.price * product.amount;

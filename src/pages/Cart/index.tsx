@@ -1,10 +1,11 @@
-import React from "react";
+import { useState } from "react";
 import {
   MdDelete,
   MdAddCircleOutline,
   MdRemoveCircleOutline,
 } from "react-icons/md";
 import { useCart } from "../../hooks/useCart";
+import { formatPrice } from "../../util/format";
 
 // import { useCart } from '../../hooks/useCart';
 // import { formatPrice } from '../../util/format';
@@ -21,26 +22,28 @@ interface Product {
 const Cart = (): JSX.Element => {
   const { cart, removeProduct, updateProductAmount } = useCart();
 
-  // const cartFormatted = cart.map(product => ({
-  //   // TODO
-  // }))
-  // const total =
-  //   formatPrice(
-  //     cart.reduce((sumTotal, product) => {
-  //       // TODO
-  //     }, 0)
-  //   )
+  const cartFormatted = cart.map((product) => ({
+    ...product,
+    priceFormatted: formatPrice(product.price),
+    subtotal: formatPrice(product.price * product.amount),
+  }));
+
+  const total = formatPrice(
+    cart.reduce((sumTotal, product) => {
+      return sumTotal + product.price * product.amount;
+    }, 0)
+  );
 
   function handleProductIncrement(product: Product) {
-    // TODO
+    updateProductAmount({ productId: product.id, amount: product.amount + 1 });
   }
 
   function handleProductDecrement(product: Product) {
-    // TODO
+    updateProductAmount({ productId: product.id, amount: product.amount - 1 });
   }
 
   function handleRemoveProduct(productId: number) {
-    // TODO
+    removeProduct(productId);
   }
 
   return (
@@ -56,9 +59,9 @@ const Cart = (): JSX.Element => {
           </tr>
         </thead>
         <tbody>
-          {cart.map((element: Product) => {
+          {cartFormatted.map((element) => {
             return (
-              <tr data-testid="product">
+              <tr data-testid="product" key={element.id}>
                 <td>
                   <img
                     src={element.image}
@@ -67,15 +70,15 @@ const Cart = (): JSX.Element => {
                 </td>
                 <td>
                   <strong>{element.title}</strong>
-                  <span>{element.price}</span>
+                  <span>{element.priceFormatted}</span>
                 </td>
                 <td>
                   <div>
                     <button
                       type="button"
                       data-testid="decrement-product"
-                      // disabled={product.amount <= 1}
-                      // onClick={() => handleProductDecrement()}
+                      disabled={element.amount <= 1}
+                      onClick={() => handleProductDecrement(element)}
                     >
                       <MdRemoveCircleOutline size={20} />
                     </button>
@@ -83,27 +86,25 @@ const Cart = (): JSX.Element => {
                       type="text"
                       data-testid="product-amount"
                       readOnly
-                      value={2}
+                      value={element.amount}
                     />
                     <button
                       type="button"
                       data-testid="increment-product"
-                      // onClick={() => handleProductIncrement()}
+                      onClick={() => handleProductIncrement(element)}
                     >
                       <MdAddCircleOutline size={20} />
                     </button>
                   </div>
                 </td>
                 <td>
-                  <strong>
-                    {/*TODO colocar valor total do produto*/}Total aqui
-                  </strong>
+                  <strong>{formatPrice(element.amount * element.price)}</strong>
                 </td>
                 <td>
                   <button
                     type="button"
                     data-testid="remove-product"
-                    // onClick={() => handleRemoveProduct(product.id)}
+                    onClick={() => handleRemoveProduct(element.id)}
                   >
                     <MdDelete size={20} />
                   </button>
@@ -119,7 +120,7 @@ const Cart = (): JSX.Element => {
 
         <Total>
           <span>TOTAL</span>
-          <strong>R$ 359,80</strong>
+          <strong>{total}</strong>
         </Total>
       </footer>
     </Container>
